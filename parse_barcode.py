@@ -45,80 +45,80 @@ def parse(s):
         s = s[len('WIFI:'):-len(';')]
         logging.info('Parsing %s', s)
         
-        def parse_key(s, accu=None):
-            logging.info('Parsing key from %s', s)
-            accu = accu or ''
-            key = s[0]
-            logging.debug('key: %s', key)
-            sep = s[1]
-            logging.debug('sep: %s (%s)', sep, sep==':')
-            if not sep == ':':
-                raise ValueError('Expected :  got %s (%s)' % (sep, s))
-            accu += s[2:]
-            
-            logging.info('Returning key %s (%s)', key, accu)
-            return key, accu
+    def parse_key(s, accu=None):
+        logging.info('Parsing key from %s', s)
+        accu = accu or ''
+        key = s[0]
+        logging.debug('key: %s', key)
+        sep = s[1]
+        logging.debug('sep: %s (%s)', sep, sep==':')
+        if not sep == ':':
+            raise ValueError('Expected :  got %s (%s)' % (sep, s))
+        accu += s[2:]
+        
+        logging.info('Returning key %s (%s)', key, accu)
+        return key, accu
 
 
-        def parse_value(s, accu=None):
-            accu = accu or ''
-            state = "CHARS"
-            v = ''
-            for i, c in enumerate(s):
-                if c == '"':
-                    if state == "CHARS":
-                        state = "OPEN_PAREN"
-                    elif state == "OPEN_PAREN":
-                        state = "CLOSED_PAREN"
-                        # So we've finished reading a "protected" string
-                        # We don't need to do anything with it, I guess
-                    else:
-                        raise ValueError("Read Paren in state %s "
-                            "but expected either ; or char" % state)
-                elif c == ';':
-                    # So we've finished reading a string
-                    # If we had a paren open, the string is
-                    # good as is.  But if we had a paren open,
-                    # the string *could* be interpreted as
-                    # base16 encoded binary.
-                    if not state == 'CLOSED_PAREN':
-                        try:
-                            decoded = v.decode('hex')
-                            logging.info('Interpreting string %s as binary', v)
-                            v = decoded
-                        except TypeError:
-                            logging.debug('String does not want to be hex',
-                                exc_info=True)
-
-                    state = 'BREAK'
-                    break
+    def parse_value(s, accu=None):
+        accu = accu or ''
+        state = "CHARS"
+        v = ''
+        for i, c in enumerate(s):
+            if c == '"':
+                if state == "CHARS":
+                    state = "OPEN_PAREN"
+                elif state == "OPEN_PAREN":
+                    state = "CLOSED_PAREN"
+                    # So we've finished reading a "protected" string
+                    # We don't need to do anything with it, I guess
                 else:
-                    if state == "CLOSED_PAREN":
-                        raise ValueError("Read char %s after "
-                            "a closing paren. Expected ; (%s)" % (c, s))
-                    elif state == 'OPEN_PAREN':
-                        # We need to read the string such that it is *not* a
-                        # hexademical string, but real text
-                        v += c
-                    else:
-                        v += c
+                    raise ValueError("Read Paren in state %s "
+                        "but expected either ; or char" % state)
+            elif c == ';':
+                # So we've finished reading a string
+                # If we had a paren open, the string is
+                # good as is.  But if we had a paren open,
+                # the string *could* be interpreted as
+                # base16 encoded binary.
+                if not state == 'CLOSED_PAREN':
+                    try:
+                        decoded = v.decode('hex')
+                        logging.info('Interpreting string %s as binary', v)
+                        v = decoded
+                    except TypeError:
+                        logging.debug('String does not want to be hex',
+                            exc_info=True)
 
-            
-            if not state == 'BREAK':
-                raise ValueError('Finished in state %s. Expected BREAK (%s)', state, s)
+                state = 'BREAK'
+                break
+            else:
+                if state == "CLOSED_PAREN":
+                    raise ValueError("Read char %s after "
+                        "a closing paren. Expected ; (%s)" % (c, s))
+                elif state == 'OPEN_PAREN':
+                    # We need to read the string such that it is *not* a
+                    # hexademical string, but real text
+                    v += c
+                else:
+                    v += c
 
-            value = v
-            i += 1
-            accu = s[i:]
-            
-            logging.debug('Returning value %s (%s)', value, accu)
-            return value, accu
+        
+        if not state == 'BREAK':
+            raise ValueError('Finished in state %s. Expected BREAK (%s)', state, s)
+
+        value = v
+        i += 1
+        accu = s[i:]
+        
+        logging.debug('Returning value %s (%s)', value, accu)
+        return value, accu
         
 
-        def parse_key_value(s):
-            key, accu = parse_key(s)
-            value, accu = parse_value(accu)
-            return key, value, accu
+    def parse_key_value(s):
+        key, accu = parse_key(s)
+        value, accu = parse_value(accu)
+        return key, value, accu
     
     d = {}
     accu = s
