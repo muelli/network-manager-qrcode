@@ -25,7 +25,8 @@ from gi.repository import GLib, Gtk
 from gi.repository import Gst
 
 class Scanner(Gtk.Application):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, code=None, *args, **kwargs):
+        self.code = code
         super(Scanner, self).__init__(*args, **kwargs)
         self.connect("activate", self.on_activate)
 
@@ -39,18 +40,29 @@ class Scanner(Gtk.Application):
 
         window.show_all()
         self.add_window(window)
+        
+        data = self.code
+
+        if data:
+            logging.info('Emitting barcode %r', data)
+            scanner.emit("barcode", data, None)
 
     def on_barcode(self, reader, barcode, message):
+        logging.debug('Reader %r   message %r', reader, message)
         logging.debug('Received barcode! %s', barcode)
         parsed = parse(barcode)
         logging.info('Parsed %s into %s', barcode, parsed)
         
         
 
-def main():
+def main(code=None):
     Gst.init()
-    app = Scanner()
-    app.run(None)
+    app = Scanner(code)
+    app.run()
 
 if __name__ == '__main__':
-    main()
+    logging.basicConfig(level=logging.DEBUG)
+    import sys
+    code = sys.argv[1] if len(sys.argv) > 1 else None
+        
+    main(code=code)
