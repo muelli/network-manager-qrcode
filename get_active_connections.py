@@ -58,5 +58,5 @@ def get_active_connections():
         #print "%s (%s) - %s" % (settings['connection']['id'], uuid, settings['connection']['type']) 
 
 if __name__ == '__main__':
-    print(get_active_connection())
+    print((get_active_connection()))
 

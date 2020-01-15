@@ -112,4 +112,4 @@ def submit(connection_settings):
 if __name__ == '__main__':
     settings = build_network_manager_connection_settings(ssid="foo", passwd="bar"*3)
     print(settings)
-    print(submit(settings))
+    print((submit(settings)))

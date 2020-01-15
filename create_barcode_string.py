@@ -43,7 +43,7 @@ def create_string(connection):
         ba = bytearray(64)
         for i in range(64):
             c = "%c" % bytes(password[i % l])
-            print "C: %r" % c
+            print("C: %r" % c)
             ba[i] = c
         digest = md5(ba)
         WEPSTRONGKEYSIZE = 13
@@ -74,4 +74,4 @@ if __name__ == '__main__':
             'psk': 'my passphrase',
         },
     }
-    print (create_string (connection))
+    print((create_string (connection)))

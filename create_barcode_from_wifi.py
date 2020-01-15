@@ -36,24 +36,24 @@ if __name__ == '__main__':
     connections = list_connections()
     if len(sys.argv) == 1:
         for i, c in enumerate(connections):
-            print ("%5d: %s" % (i, c['connection']['id']))
+            print(("%5d: %s" % (i, c['connection']['id'])))
         print ()
         connection = next(get_active_connections())
-        print ("Using active connection %s", connection)
+        print(("Using active connection %s" % connection))
     else:
         selection = int(sys.argv[1])
-        print ("Selecting %d" % selection)
+        print(("Selecting %d" % selection))
         connection = connections[selection]
     
     key = connection['802-11-wireless-security'].get('psk', None) or \
           connection['802-11-wireless-security']['wep-key0']
     
-    print ("%s - %s" % (connection['connection']['id'], key))
+    print(("%s - %s" % (connection['connection']['id'], key)))
     s = barcode_from_connection(connection)
-    print ("String: %s" % s.data)
-    print ("%s" % s.terminal(quiet_zone=1,
+    print(("String: %s" % s.data))
+    print(("%s" % s.terminal(quiet_zone=1,
                     module_color='black', background='white'
-                    ))
+                    )))
     #s.svg('/tmp/barcode.svg')
     #s.eps('/tmp/barcode.epg')
     #s.png('/tmp/barcode.png')
