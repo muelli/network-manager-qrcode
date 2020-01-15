@@ -46,9 +46,20 @@ if __name__ == '__main__':
         print("Using active connection")
         log.debug("Connection: %s", connection)
     else:
-        selection = int(sys.argv[1])
-        print(("Selecting %d" % selection))
-        connection = connections[selection]
+        try:
+            selection = int(sys.argv[1])
+        except ValueError:
+            filter = sys.argv[1]
+            for i, c in enumerate(connections):
+                log.debug("Filtering Connection %d: %s", i, json.dumps(c, indent=4))
+                ssid = bytes(c['802-11-wireless']['ssid']).decode('ascii')
+                if filter in ssid:
+                    print(("%5d: %s" % (i, c['connection']['id'])))
+            print ()
+            sys.exit(0)
+        else:
+            print(("Selecting %d" % selection))
+            connection = connections[selection]
 
     try:
         key = connection['802-11-wireless-security'].get('psk', None) or \
