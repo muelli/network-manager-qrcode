@@ -100,6 +100,9 @@ def list_connections():
         merge_secrets(settings_connection, config, 'cdma')
         merge_secrets(settings_connection, config, 'ppp')
 
+        if not config['connection']['type'] == '802-11-wireless':
+            continue
+
         log.debug("%s", json.dumps(dict(config), indent=4))
         ret.append(config)
 
