@@ -19,7 +19,10 @@
 #
 
 import dbus
+import json
+import logging
 
+log = logging.getLogger(__name__)
 # This example asks settings service for all configured connections.
 # It also asks for secrets, demonstrating the mechanism the secrets can
 # be handled with.
@@ -37,6 +40,8 @@ def merge_secrets(proxy, config, setting_name):
             for key in secrets[setting]:
                 config[setting_name][key] = secrets[setting][key]
     except Exception as e:
+        log.debug("Could not get secret for %s", json.dumps(config, indent=4),
+            exc_info=True)
         pass
 
 def dict_to_string(d, indent):
@@ -94,27 +99,28 @@ def list_connections():
         merge_secrets(settings_connection, config, 'gsm')
         merge_secrets(settings_connection, config, 'cdma')
         merge_secrets(settings_connection, config, 'ppp')
-        
-        #print "%r" % dict(config)
+
+        log.debug("%s", json.dumps(dict(config), indent=4))
         ret.append(config)
 
         # Get the details of the 'connection' setting
         s_con = config['connection']
-        #print "    name: %s" % s_con['id']
-        #print "    uuid: %s" % s_con['uuid']
-        #print "    type: %s" % s_con['type']
+        #print( "    name: %s" % s_con['id'])
+        #print( "    uuid: %s" % s_con['uuid'])
+        #print( "    type: %s" % s_con['type'])
         security =        config.get('802-11-wireless-security', {})
         sectype = security.get('key-mgmt', None)
         pw = security.get('psk', None)
-        #print "  sectype  : %s" % sectype
-        #print "  pw  : %s" % pw
-        #print "    ------------------------------------------"
+        #print( "  sectype  : %s" % sectype)
+        #print( "  pw  : %s" % pw)
+        #print( "    ------------------------------------------")
         #connection_to_string(config)
 
     #print ""
 
     return ret
 
-list_connections()
+if __name__ == "__main__":
+    list_connections()
 
 
