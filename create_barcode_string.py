@@ -18,7 +18,9 @@
 #
 
 from hashlib import md5
+import logging
 
+log = logging.getLogger(__name__)
 
 class quotedphrase(type("foo")):
     def __str__(self):
@@ -31,7 +33,9 @@ def create_string(connection):
     s_con = connection['connection']
     security = connection['802-11-wireless-security']
     
-    ssid = s_con['id']
+    ssid_bytes = connection['802-11-wireless']['ssid']
+    ssid = bytes(ssid_bytes).decode('ascii')
+    log.info("Using SSID: %r", ssid)
     
     if 'wep-key0' in security:
         sectype = 'WEP'
