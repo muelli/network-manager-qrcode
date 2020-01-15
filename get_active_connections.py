@@ -20,6 +20,7 @@
 #
 
 import dbus, sys
+import json
 
 from read_connections import merge_secrets
 
@@ -53,10 +54,11 @@ def get_active_connections():
         c_proxy = bus.get_object("org.freedesktop.NetworkManager", connection_path)
         connection = dbus.Interface(c_proxy, "org.freedesktop.NetworkManager.Settings.Connection")
         settings = connection.GetSettings()
-        merge_secrets(c_proxy, settings, "802-11-wireless-security")
+        merge_secrets(connection, settings, "802-11-wireless")
+        merge_secrets(connection, settings, "802-11-wireless-security")
         yield settings
         #print "%s (%s) - %s" % (settings['connection']['id'], uuid, settings['connection']['type']) 
 
 if __name__ == '__main__':
-    print((get_active_connection()))
+    print(json.dumps(next(get_active_connections()), indent=4))
 
