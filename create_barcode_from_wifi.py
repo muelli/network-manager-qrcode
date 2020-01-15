@@ -16,6 +16,8 @@
 #
 # Copyright (C) 2015 Tobias Mueller <muelli@cryptobitch.de>
 #
+import json
+import logging
 import sys
 
 import pyqrcode
@@ -33,27 +35,36 @@ def barcode_from_connection(connection):
 
 if __name__ == '__main__':
     import textwrap
+    logging.basicConfig(level=logging.INFO)
+    log = logging.getLogger(__name__)
     connections = list_connections()
     if len(sys.argv) == 1:
         for i, c in enumerate(connections):
             print(("%5d: %s" % (i, c['connection']['id'])))
         print ()
         connection = next(get_active_connections())
-        print(("Using active connection %s" % connection))
+        print("Using active connection")
+        log.debug("Connection: %s", connection)
     else:
         selection = int(sys.argv[1])
         print(("Selecting %d" % selection))
         connection = connections[selection]
-    
-    key = connection['802-11-wireless-security'].get('psk', None) or \
-          connection['802-11-wireless-security']['wep-key0']
-    
-    print(("%s - %s" % (connection['connection']['id'], key)))
+
+    try:
+        key = connection['802-11-wireless-security'].get('psk', None) or \
+              connection['802-11-wireless-security']['wep-key0']
+    except KeyError:
+        log.exception("Could not find psk nor wep-key0 in keys: %s",
+            connection['802-11-wireless-security'].keys())
+        log.info("Connection: %s", json.dumps(connection, indent=4))
+        raise
+
     s = barcode_from_connection(connection)
-    print(("String: %s" % s.data))
+    log.info(("String: %s", s.data))
     print(("%s" % s.terminal(quiet_zone=1,
                     module_color='black', background='white'
                     )))
+    print(("%s - %s") % (bytes(connection['802-11-wireless']['ssid']).decode('ascii'), key))
     #s.svg('/tmp/barcode.svg')
     #s.eps('/tmp/barcode.epg')
     #s.png('/tmp/barcode.png')
