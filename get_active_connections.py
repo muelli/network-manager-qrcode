@@ -54,6 +54,10 @@ def get_active_connections():
         c_proxy = bus.get_object("org.freedesktop.NetworkManager", connection_path)
         connection = dbus.Interface(c_proxy, "org.freedesktop.NetworkManager.Settings.Connection")
         settings = connection.GetSettings()
+
+        if not settings['connection']['type'] == '802-11-wireless':
+            continue
+
         merge_secrets(connection, settings, "802-11-wireless")
         merge_secrets(connection, settings, "802-11-wireless-security")
         yield settings
